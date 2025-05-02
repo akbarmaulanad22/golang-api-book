@@ -49,7 +49,7 @@ func setupRouter(db *sql.DB) http.Handler {
 	// categories routes
 	
 	categoryRepository := repository.NewCategoryRepository()
-	categoryService := service.NewCategoryService(categoryRepository, db, validator)
+	categoryService := service.NewCategoryService(categoryRepository, db, validator, logger)
 	categoryController := controller.NewCategoryController(categoryService)
 
 	router.GET(baseUrl + "/categories", categoryController.FindAll)

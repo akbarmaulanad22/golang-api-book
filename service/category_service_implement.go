@@ -10,19 +10,22 @@ import (
 	"database/sql"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/sirupsen/logrus"
 )
 
 type categoryServiceImplement struct {
 	CategoryRepository repository.CategoryRepository
 	DB *sql.DB
 	Validate *validator.Validate
+	Logger *logrus.Logger
 }
 
-func NewCategoryService(categoryRepository repository.CategoryRepository, db *sql.DB, validate *validator.Validate) CategoryService {
+func NewCategoryService(categoryRepository repository.CategoryRepository, db *sql.DB, validate *validator.Validate, logger *logrus.Logger) CategoryService {
 	return &categoryServiceImplement{
 		CategoryRepository: categoryRepository, 
 		DB: db, 
 		Validate: validate,
+		Logger: logger,
 	}
 }
 
@@ -43,6 +46,8 @@ func (service *categoryServiceImplement) Create(ctx context.Context, categoryReq
 		IsActive: categoryRequest.IsActive,
 	})
 
+	service.Logger.WithField("data", category).Info("category created successfully")
+	
 	return helper.ConvertToCategoryResponse(category)
 }
 
@@ -53,12 +58,15 @@ func (service *categoryServiceImplement) Delete(ctx context.Context, categoryId 
 
 	defer helper.CommitOrRollback(tx)
 	
-	_, errNotFound := service.CategoryRepository.FindById(ctx, tx, categoryId)
+	category, errNotFound := service.CategoryRepository.FindById(ctx, tx, categoryId)
 	if errNotFound != nil {
 		panic(exception.NewNotFoundError(errNotFound))
 	}
 
 	service.CategoryRepository.Delete(ctx, tx, categoryId)
+
+	service.Logger.WithField("data", category).Info("category deleted successfully")
+	
 }
 
 // FindAll implements CategoryService.
@@ -110,6 +118,8 @@ func (service *categoryServiceImplement) Update(ctx context.Context, categoryReq
 	category.IsActive = categoryRequest.IsActive
 
 	category = service.CategoryRepository.Update(ctx, tx, category)
+
+	service.Logger.WithField("data", category).Info("category updated successfully")
 
 	return helper.ConvertToCategoryResponse(category)
 }
