@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"api_book/app"
 	"api_book/controller"
 	"api_book/exception"
 	"api_book/helper"
@@ -43,6 +44,7 @@ func setupRouter(db *sql.DB) http.Handler {
 	
 	validator := validator.New()
 	router := httprouter.New()
+	logger := app.NewLogger()
 
 	// categories routes
 	
@@ -60,7 +62,7 @@ func setupRouter(db *sql.DB) http.Handler {
 	// books routes
 
 	bookRepository := repository.NewBookRepository()
-	bookService := service.NewBookService(bookRepository, db, validator)
+	bookService := service.NewBookService(bookRepository, db, validator, logger)
 	bookController := controller.NewBookController(bookService)
 
 	router.GET(baseUrl + "/books", bookController.FindAll)

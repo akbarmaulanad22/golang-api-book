@@ -10,19 +10,22 @@ import (
 	"database/sql"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/sirupsen/logrus"
 )
 
 type bookServiceImplement struct {
-	Repository repository.BookRepository
-	DB         *sql.DB
-	Validate   *validator.Validate
+	Repository 	repository.BookRepository
+	DB         	*sql.DB
+	Validate   	*validator.Validate
+	Logger 		*logrus.Logger
 }
 
-func NewBookService(repo repository.BookRepository, db *sql.DB, validate *validator.Validate) BookService {
+func NewBookService(repo repository.BookRepository, db *sql.DB, validate *validator.Validate, logger *logrus.Logger) BookService {
 	return &bookServiceImplement{
 		Repository: repo,
 		DB:         db,
 		Validate:   validate,
+		Logger: 	logger,
 	}
 }
 
@@ -44,6 +47,8 @@ func (service *bookServiceImplement) Create(ctx context.Context, bookRequest web
 		Pages: bookRequest.Pages,
 		CategoryId: bookRequest.CategoryId,
 	})
+
+	service.Logger.WithField("data", book).Info("book created successfully")
 	
 	return helper.ConvertToBookResponse(book)
 }
@@ -54,12 +59,14 @@ func (service *bookServiceImplement) Delete(ctx context.Context, categoryId int)
 	helper.PanicIfError(err)
 	defer helper.CommitOrRollback(tx)
 
-	_, errNotFound := service.Repository.FindById(ctx, tx, categoryId)
+	book, errNotFound := service.Repository.FindById(ctx, tx, categoryId)
 	if errNotFound != nil {
 		panic(exception.NewNotFoundError(errNotFound))
 	}
 
 	service.Repository.Delete(ctx, tx, categoryId)
+	
+	service.Logger.WithField("data", book).Info("book deleted successfully")
 }
 
 // FindAll implements BookService.
@@ -110,6 +117,8 @@ func (service *bookServiceImplement) Update(ctx context.Context, bookRequest web
 	book.CategoryId = bookRequest.CategoryId
 
 	book = service.Repository.Update(ctx, tx, book)
+
+	service.Logger.WithField("data", book).Info("book updated successfully")
 	
 	return helper.ConvertToBookResponse(book)
 }

@@ -29,11 +29,11 @@ func TestBookCreateSuccess(t *testing.T) {
 	
 	requestBody := strings.NewReader(`
 		{
-			"title": "no love just lift edit",
+			"title": "no love just lift edit ahaahah",
 			"author": "barr edit",
 			"publisher": "pio edit",
 			"year": 2025,
-			"genre": "gatau edit",
+			"genre": "gatau edit ahahaha",
 			"pages": 2,
 			"category_id": 2
 		}
@@ -77,7 +77,7 @@ func TestBookUpdateSuccess(t *testing.T) {
 
 	repo := repository.NewBookRepository()
 	category := repo.Save(context.Background(), tx, domain.Book{
-		Title: "no love just lift",
+		Title: "no love just lift ed",
 		Author: "barr",
 		Publisher: "pio",
 		Year: 2025,

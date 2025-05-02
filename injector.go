@@ -33,6 +33,7 @@ func InitializedServer() *http.Server {
 	wire.Build(
 		app.NewDB, 
 		app.NewValidator,
+		app.NewLogger,
 		categorySet,
 		bookSet,
 		app.NewRouter,
